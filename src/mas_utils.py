@@ -27,7 +27,6 @@ def eucl_dist(pos1, pos2):
     """
         Compute the Euclidian distance between two vectors.
     """
-    print("mas_utils.", "eucl_dist()")
     dim = len(pos1)
     sq_dist = 0.0
     for i in range(dim):
@@ -39,7 +38,6 @@ def vector_sum(vec1, vec2):
     """
         Compute the sum of two vectors.
     """
-    print("mas_utils.", "vector_sum()")
     dim = len(vec1)
     res = []
     for i in range(dim):
@@ -50,7 +48,6 @@ def vector_list_sum(vec_list, vec_add):
     """
         Add a vector to each vector in a list of vectors.
     """
-    print("mas_utils.", "vector_list_sum()")
     res = []
     for vec in vec_list:
         res.append(vector_sum(vec, vec_add))
@@ -60,7 +57,6 @@ def vector_diff(vec1, vec2):
     """
         Compute the difference of two vectors.
     """
-    print("mas_utils.", "vector_diff()")
     dim = len(vec1)
     res = []
     for i in range(dim):
@@ -73,7 +69,6 @@ def into_list(data):
         is a list, do nothing and if the value is None, return an
         empty list.
     """
-    print("mas_utils.", "into_list()")
     if data is not None:
     	if type(data) is not list:
     		data = [data]
@@ -87,7 +82,6 @@ def sort_list(ls, order_fn):
     """
         Sort the list accord to the ordering function.
     """
-    print("mas_utils.", "sort_list()")
     # Insertion sort
     for i in range(1, len(ls)):
         val = ls[i]
@@ -102,7 +96,6 @@ def sort_on_second_list(ls1, ls2, order_fn):
         Sort the two lists according to the ordering function
         applied on the second list.
     """
-    print("mas_utils.", "sort_on_second_list()")
     # Insertion sort
     for i in range(1, len(ls2)):
         val1, val2 = ls1[i], ls2[i]
@@ -117,7 +110,6 @@ def order_scalar_asc(val1, val2):
         Ascending ordering function on scalar values to be
         used with sorting functions.
     """
-    print("mas_utils.", "order_scalar_asc()")
     return val1 < val2
 
 def order_tuple_second_asc(t1, t2):
@@ -126,7 +118,6 @@ def order_tuple_second_asc(t1, t2):
         second element of the tuples. To be used with sorting 
         functions.
     """
-    print("mas_utils.", "order_tuple_second_asc()")
     return t1[1] < t2[1]
 
 #==================================================
@@ -140,7 +131,6 @@ def config_read_file(file_name):
         PARAM_NAME = value.
         Empty lines and lines starting with "#" (comments) are ignored.
     """
-    print("mas_utils.", "config_read_file()")
     f = open(file_name)
     all_lines = f.read().split("\n")
     f.close()
@@ -166,7 +156,6 @@ def config_get_property(config, property):
     """
         Return the property from the configuration (as a string).
     """
-    print("mas_utils.", "config_get_property()")
 	# If the property does not exist, return None.
     return config.get(property,None)
 
@@ -174,14 +163,12 @@ def cfg_pop_size(config):
     """
         Return the population size from the configuration.
     """
-    print("mas_utils.", "cfg_pop_size()")
     return int(config_get_property(config, "POP_SIZE"))
 
 def cfg_env_size(config):
     """
         Return the environment size from the configuration.
     """
-    print("mas_utils.", "cfg_env_size()")
     return int(config_get_property(config, "ENV_SIZE"))    
 
 def cfg_max_cycle(config):
@@ -189,14 +176,12 @@ def cfg_max_cycle(config):
         Return (from the configuration) the maximum number of cycles 
         for the experiment.
     """
-    print("mas_utils.", "cfg_max_cycle()")
     return int(config_get_property(config, "MAX_CYCLE"))    
 
 def cfg_cell_rules(config):
     """
         Return the list of cell rules from the configuration.
     """
-    print("mas_utils.", "cfg_cell_rules()")
     res = config_get_property(config,"ADD_CELL_RULE")
     res = into_list(res)
     return res
@@ -205,7 +190,6 @@ def cfg_agent_rules(config):
     """
         Return the list of agent rules from the configuration.
     """
-    print("mas_utils.", "cfg_agent_rules()")
     res = config_get_property(config,"ADD_AGENT_RULE")
     res = into_list(res)
     return res
@@ -215,7 +199,6 @@ def cfg_capacity_distributions(config):
         Return the list of capacity distribution statements from 
         the configuration.
     """
-    print("mas_utils.", "cfg_capacity_distributions()")
     res = config_get_property(config,"ADD_CAPACITY_DISTRIB")
     res = into_list(res)
     return res	

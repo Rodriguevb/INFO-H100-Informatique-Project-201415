@@ -31,7 +31,6 @@ def env_plot(env, showGrid=True):
         To actually show the plot, the pylab.show() method
         still has to be invoked.
     """
-    print("mas_graphics.", "env_plot()")
     ax = plt.gca()
     ax.set_aspect('equal', 'box')
     ax.xaxis.set_major_locator(plt.NullLocator())
@@ -62,13 +61,11 @@ def pop_plot(pop):
         To actually show the plot, the pylab.show() method
         still has to be invoked.
     """
-    print("mas_graphics.", "pop_plot()")
     agents_list = p.get_agents(pop)
     for agent in agents_list:
         agent_plot(agent)
 
 def agent_plot(agent):
-    print("mas_graphics.", "agent_plot()")
     if a.get_is_living(agent):
         pos = a.get_pos(agent)
         env = a.get_env(agent)
@@ -77,8 +74,7 @@ def agent_plot(agent):
 def mas_plot(mas, showGrid=True):
     """
     	Plot the complete complete MAS as a matplotlib graphic.
-    """
-    print("mas_graphics.", "mas_plot()")
+    """	
     env = m.get_env(mas)
     pop = m.get_pop(mas)
     plt.axes([0, 0, 1, 1], axisbg=None, frameon = False) 

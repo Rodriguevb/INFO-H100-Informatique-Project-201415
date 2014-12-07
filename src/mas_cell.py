@@ -16,7 +16,6 @@ import random
 import mas_environment as e
 
 
-
 #==================================================
 #  CELL
 #==================================================   
@@ -56,7 +55,6 @@ def get_env(cell):
         Return the environment the given cell belongs to.
         (Allows "navigation" between variable levels.)
     """
-    print("mas_cell.", "get_env()")	
     return __get_property(cell, ENV_IDX)
 
 def set_env(cell, env):
@@ -64,21 +62,18 @@ def set_env(cell, env):
         Set the environment the given cell belongs to.
         (Allows "navigation" between variable levels.)
     """
-    print("mas_cell.", "set_env()")	
     __set_property(cell, ENV_IDX, env)    
 
 def get_capacity(cell):
     """
         Return the sugar capacity of the cell.
     """
-    print("mas_cell.", "get_capacity()")	  
     return __get_property(cell, SUGAR_CAPACITY_IDX)
         
 def set_capacity(cell, capacity):
     """
         Set the sugar capacity of the cell.
-    """
-    print("mas_cell.", "set_capacity()")	    
+    """    
     env = get_env(cell)
     if capacity < 0:
         raise Exception("The sugar capacity of a cell cannot be negative.")
@@ -90,15 +85,13 @@ def set_capacity(cell, capacity):
 def get_sugar_level(cell):
     """
         Return the current sugar level of the cell.
-    """
-    print("mas_cell.", "get_sugar_level()")	
+    """    
     return __get_property(cell, SUGAR_LEVEL_IDX)
 
 def set_sugar_level(cell, level):
     """
         Set the current sugar level of the cell.
-    """
-    print("mas_cell.", "set_sugar_level()")
+    """    
     if level < 0:
         raise Exception("Error: The sugar level of a cell cannot be negative.")
     elif level > get_capacity(cell):
@@ -110,7 +103,6 @@ def get_present_agent(cell):
         If an agent is currently present on the cell, return 
         that agent, otherwise return the constant None.
     """
-    print("mas_cell.", "get_present_agent()")
     return __get_property(cell, PRESENT_AGENT_IDX)
 
 def set_present_agent(cell, agent):
@@ -118,7 +110,6 @@ def set_present_agent(cell, agent):
         Set the agent that is currently present on the cell. 
         To tell that there is no agent, set agent to None.
     """
-    print("mas_cell.", "set_present_agent()")
     __set_property(cell, PRESENT_AGENT_IDX, agent)
 
 # --- Initialisation ---
@@ -128,7 +119,6 @@ def new_instance(env):
         Return a new cell instance and "declare" to which 
         environment it belongs to.
     """
-    print("mas_cell.", "new_instance()")
     cell = __empty_instance()
     set_env(cell, env)
     # We have to set the capacity before sugar level, because
@@ -148,7 +138,6 @@ def add_capacity(cell, capacity):
         initialisation functions, e.g. "add_capacity_gaussian" 
         in the "mas_environment" module.
     """
-    print("mas_cell.", "add_capacity()")
     # Add the current capacity of the cell to the value of the
     # parameter "capacity".
     capacity += get_capacity(cell)
@@ -167,7 +156,6 @@ def set_sugar_level_to_capacity(cell):
         Set the sugar level of the cell to its capacity, i.e.,
         to its highest possible value.
     """
-    print("mas_cell.", "set_sugar_level_to_capacity()")
     capacity = get_capacity(cell)
     set_sugar_level(cell, capacity)
 
@@ -177,7 +165,6 @@ def add_sugar_level(cell, level):
     """
     # Add the current sugar level of the cell to the value of 
     # the parameter "level".
-    print("mas_cell.", "add_sugar_level()")
     level += get_sugar_level(cell)
     set_sugar_level(cell, level)
 
@@ -188,7 +175,6 @@ def agent_is_present(cell):
         Return (boolean) whether or not an agent is currently
         present on the cell. (Does not tell actual which agent.)
     """
-    print("mas_cell.", "agent_is_present()")
     return get_present_agent(cell) != None
 
 # --- Graphic display ---
@@ -198,7 +184,6 @@ def show(cell):
         Print some key information about the cell.
         Mainly use this for debugging.
     """
-    print("mas_cell.", "show()")
     print("level:", round(get_sugar_level(cell), 2), \
         "  capacity:", round(get_capacity(cell), 2), \
         "  agent present:", agent_is_present(cell))
@@ -222,7 +207,6 @@ def regen_two_percent(cell):
     """
         Cell rule: regenerate 2% of the cell's capacity.
     """
-    print("mas_cell.", "regen_two_percent()")
     capacity = get_capacity(cell)
     level = get_sugar_level(cell)
     level += 0.02*capacity
@@ -234,7 +218,6 @@ def regen_five_percent(cell):
     """
         Cell rule: regenerate 5% of the cell's capacity.
     """
-    print("mas_cell.", "regen_five_percent()")
     capacity = get_capacity(cell)
     level = get_sugar_level(cell)
     level += 0.05*capacity
@@ -246,7 +229,6 @@ def regen_ten_percent(cell):
     """
         Cell rule: regenerate 10% of the cell's capacity.
     """
-    print("mas_cell.", "regen_ten_percent()")
     capacity = get_capacity(cell)
     level = get_sugar_level(cell)
     level += 0.10*capacity
@@ -258,6 +240,5 @@ def regen_full(cell):
     """
         Cell rule: regenerate the level to full capacity.
     """
-    print("mas_cell.", "regen_full()")
     capacity = get_capacity(cell)
     set_sugar_level(cell, capacity)

@@ -68,63 +68,54 @@ def get_env(mas):
     """
         Return the environment of the MAS.
     """
-    print("mas.", "get_env()")
     return __get_property(mas, ENV_IDX)
 
 def set_env(mas, env):
     """
         Set the environment of the MAS.
     """
-    print("mas.", "set_env()")
     __set_property(mas, ENV_IDX, env)
 
 def get_pop(mas):
     """
         Return the agent population of the MAS.
     """
-    print("mas.", "get_pop()")
     return __get_property(mas, POP_IDX)
 
 def set_pop(mas, pop):
     """
         Set the agent population of the MAS.
     """
-    print("mas.", "set_pop()")
     __set_property(mas, POP_IDX, pop)
 
 def get_cell_rules(mas):
     """
         Return the cell rules of the MAS as a list of functions.
     """
-    print("mas.", "get_cell_rules()")
     return __get_property(mas, CELL_RULES_IDX)
 
 def set_cell_rules(mas, rules_list):
     """
         Set the cell rules of the MAS as a list of functions.
     """
-    print("mas.", "set_cell_rules()")
     __set_property(mas, CELL_RULES_IDX, rules_list)
 
 def get_agent_rules(mas):
     """
         Return the agent rules of the MAS as a list of functions.
     """
-    print("mas.", "get_agent_rules()")
     return __get_property(mas, AGENT_RULES_IDX)
 
 def set_agent_rules(mas, rules_list):
     """
         Set the agent rules of the MAS as a list of functions.
     """
-    print("mas.", "set_agent_rules()")
     __set_property(mas, AGENT_RULES_IDX, rules_list)
 
 def get_ending_condition(mas):
     """
         Return the ending condition function of the MAS.
     """
-    print("mas.", "get_ending_condition()")
     return __get_property(mas, EXPERIMENT_ENDING_CONDITION_IDX)
 
 def set_ending_condition(mas, ending_condition_fn):
@@ -133,7 +124,6 @@ def set_ending_condition(mas, ending_condition_fn):
         receives the MAS as parameter and returns a boolean to tell whether
         or not to end the experiment.
     """
-    print("mas.", "set_ending_condition()")
     # Function signature:  fn(mas) ---> boolean(end_experiment)
     __set_property(mas, EXPERIMENT_ENDING_CONDITION_IDX, ending_condition_fn)    
 
@@ -141,21 +131,18 @@ def get_max_cycle(mas):
     """
         Return the maximum number of cycles for an experiment with the MAS.
     """
-    print("mas.", "get_max_cycle()")
     return __get_property(mas, MAX_CYCLE_IDX)
 
 def set_max_cycle(mas, cycle):
     """
         Set the maximum number of cycles for an experiment with the MAS.
     """
-    print("mas.", "set_max_cycle()")
     __set_property(mas, MAX_CYCLE_IDX, cycle)
 
 def get_cycle(mas):
     """
         Return the current cycle of an experiment.
     """
-    print("mas.", "get_cycle()")
     return __get_property(mas, CYCLE_IDX)
 
 def set_cycle(mas, cycle):
@@ -163,7 +150,6 @@ def set_cycle(mas, cycle):
         Set the current cycle of an experiment. This function should usually not
         be called directly.
     """
-    print("mas.", "set_cycle()")
     __set_property(mas, CYCLE_IDX, cycle)
 
 # --- Initialisation ---
@@ -172,21 +158,13 @@ def new_instance():
     """ 
         Return a new MAS instance.
     """
-    print("mas.", "new_instance()")
     mas = __empty_instance()
-    print( end = "\t" )
     set_env(mas, None)
-    print( end = "\t" )
     set_pop(mas, None)
-    print( end = "\t" )
     set_cell_rules(mas, [])
-    print( end = "\t" )
     set_agent_rules(mas, [])
-    print( end = "\t" )
     set_ending_condition(mas, DEFAULT_ENDING_CONDITION)
-    print( end = "\t" )
     set_max_cycle(mas, 0)
-    print( end = "\t" )
     set_cycle(mas, 0)
     return mas
 
@@ -195,7 +173,6 @@ def new_instance_from_config(config):
         Return a new MAS instance that has been initialised according
         to the parameters passed by the configuration.
     """
-    print("mas.", "new_instance_from_config()")
     mas = new_instance()
     # Environment
     env = e.new_instance(mas, u.cfg_env_size(config))
@@ -224,7 +201,6 @@ def add_cell_rule(mas, cell_rule):
     """
         Add a cell rule to the MAS.
     """
-    print("mas.", "add_cell_rule()")
     mas[CELL_RULES_IDX].append(cell_rule)
 
 def add_cell_rule_from_string(mas, cell_rule_str):
@@ -232,14 +208,12 @@ def add_cell_rule_from_string(mas, cell_rule_str):
         Add a cell rule to the MAS based on a string
         that represents the function call.
     """
-    print("mas.", "add_cell_rule_from_string()")
     add_cell_rule(mas, eval("c."+cell_rule_str))
 
 def apply_cell_rules(mas):
     """
         Apply all cell rules to each cell of the MAS's environment.
     """
-    print("mas.", "apply_cell_rules()")
     env = get_env(mas)
     for cell_rule in get_cell_rules(mas):
         e.apply_fn_to_all_cells(env, cell_rule)
@@ -250,7 +224,6 @@ def add_agent_rule(mas, agent_rule):
     """
         Add an agent rule to the MAS.
     """
-    print("mas.", "add_agent_rule()")
     mas[AGENT_RULES_IDX].append(agent_rule)
 
 def add_agent_rule_from_string(mas, agent_rule_str):
@@ -258,14 +231,12 @@ def add_agent_rule_from_string(mas, agent_rule_str):
         Add an agent rule to the MAS based on a string
         that represents the function call.
     """
-    print("mas.", "add_agent_rule_from_string()")
     add_agent_rule(mas, eval("a."+agent_rule_str))
 
 def apply_agent_rules(mas):
     """
         Apply all agent rules to each agent of the MAS's population.
     """
-    print("mas.", "apply_agent_rules()")
     pop = get_pop(mas)
     for agent_rule in get_agent_rules(mas):
         p.apply_rule(pop, agent_rule)
@@ -276,14 +247,13 @@ def increment_cycle(mas):
     """
         Increment the cycle of the MAS by one unit.
     """
-    print("mas.", "increment_cycle()")
     set_cycle(mas, get_cycle(mas)+1)
 
 def run_one_cycle(mas):
     """
         Run one experiment cycle of the MAS.
     """
-    print("mas.", "run_one_cycle()")
+    print("mas. run_one_cycle(mas)")
     apply_cell_rules(mas)
     apply_agent_rules(mas)
 
@@ -291,7 +261,6 @@ def run_experiment(mas):
     """
         Run a experiment on the initialised MAS.
     """
-    print("mas.", "run_experiment()")
     set_cycle(mas, 0)
     ending_condition = get_ending_condition(mas)
     while not ending_condition(mas):
@@ -304,7 +273,6 @@ def show(mas):
     """
         Print a description of the complete MAS as text.
     """
-    print("mas.", "show()")
     env = get_env(mas)
     pop = get_pop(mas)
     print("**** ENVIRONMENT ****")

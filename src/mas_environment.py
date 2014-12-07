@@ -68,7 +68,6 @@ def get_mas(env):
         Return the MAS the given environment belongs to.
         (Allows "navigation" between variable levels.)
     """
-    print("mas_environment.", "get_mas()")
     return __get_property(env, MAS_IDX)
 
 def set_mas(env, mas):
@@ -76,14 +75,12 @@ def set_mas(env, mas):
         Set the MAS the given environment belongs to.
         (Allows "navigation" between variable levels.)
     """
-    print("mas_environment.", "set_mas()")
     __set_property(env, MAS_IDX, mas)
 
 def get_cell_matrix(env):
     """
         Return the matrix of cells of the environment.
     """
-    print("mas_environment.", "get_cell_matrix()")
     return __get_property(env, CELL_MATRIX_IDX)
 
 def set_cell_matrix(env, cell_matrix):
@@ -93,21 +90,18 @@ def set_cell_matrix(env, cell_matrix):
         get_cell() should be preferred to access one specific
         cell.
     """
-    print("mas_environment.", "set_cell_matrix()")
     __set_property(env, CELL_MATRIX_IDX, cell_matrix)
 
 def get_max_capacity(env):
     """
         Get the maximum capacity constant for the environment. 
     """
-    print("mas_environment.", "get_max_capacity()")
     return __get_property(env, MAX_CAPACITY_IDX)
 
 def set_max_capacity(env, max_capacity):
     """
         Set the maximum capacity constant for the environment.
     """
-    print("mas_environment.", "set_max_capacity()")
     __set_property(env, MAX_CAPACITY_IDX, max_capacity)
 
 # ---
@@ -116,7 +110,6 @@ def get_cell(env, cell_ref):
     """
         Return the referenced cell of the environment.
     """
-    print("mas_environment.", "get_cell()")
     mat = get_cell_matrix(env)
     sz = size(env)
     (x, y) = cell_ref
@@ -127,7 +120,6 @@ def get_cells(env):
         Return the list of all cells. Useful for iterating through
         all cells without knowing the underlying data structure.
     """
-    print("mas_environment.", "get_cells()")
     ls = []
     for cell_ref in get_cell_refs(env):
         cell = get_cell(env, cell_ref)
@@ -139,7 +131,6 @@ def get_cell_refs(env):
         Return the list of all cell references. Useful for iterating 
         through all cells without knowing the underlying data structure.
     """
-    print("mas_environment.", "get_cell_refs()")
     sz = size(env)
     ls = []
     for y in range(sz):
@@ -154,7 +145,6 @@ def new_instance(mas, sz):
         Return a new environment instance of size "sz" and 
         "declare" to which MAS it belongs to.
     """
-    print("mas_environment.", "new_instance()")
     env = __empty_instance()
     # Set max capacity first, because initialisation of cells
     # depend on it.
@@ -173,7 +163,6 @@ def size(env):
         number of cells in the environment is the square value of 
         the size.
     """
-    print("mas_environment.", "size()")
     mat = get_cell_matrix(env)
     return len(mat)
 
@@ -184,7 +173,6 @@ def max_sugar_level_cell_ref(env, cell_ref_list):
         Return the reference of the cell (from the given list)
         with the highest sugar level.
     """
-    print("mas_environment.", "max_sugar_level_cell_ref()")
     max_cell_ref = cell_ref_list[0]
     max_cell = get_cell(env, max_cell_ref)
     for cell_ref in cell_ref_list:
@@ -199,7 +187,6 @@ def sort_sugar_level_desc(env, cell_ref_list):
         Sort the list of cells reference in descending order of 
         their corresponding sugar level.
     """
-    print("mas_environment.", "sort_sugar_level_desc()")
     # Build a separate list that assigns the sugar level to each
     # corresponding cell referenced in the list given as parameter.
     sugar_level_list = []
@@ -217,7 +204,6 @@ def default_cell_ref():
         Return a default (invalid) position (e.g., for agent 
         initialisation).
     """
-    print("mas_environment.", "default_cell_ref()")
     return (-1, -1)
 
 def random_cell_ref(env):
@@ -225,7 +211,6 @@ def random_cell_ref(env):
         Return a random position in the environment (e.g., for
         agent initialisation).
     """
-    print("mas_environment.", "random_cell_ref()")
     sz = size(env)
     res = ( random.randint(0, sz-1), random.randint(0, sz-1) )
     return res
@@ -236,7 +221,6 @@ def random_cell_ref_without_agent(env):
         agent on it (e.g., for agent initialisation). 
         Assumption: There is at least one free cell in the environment.
     """
-    print("mas_environment.", "random_cell_ref_without_agent()")
     # Note: This is not the most efficient approach!
     continue_search = True
     while continue_search:
@@ -256,7 +240,6 @@ def add_capacity_gaussian(env, max_capacity_factor, center, disp):
         a multiplicative factor of the maximum capacity property of
         the environment.
     """
-    print("mas_environment.", "add_capacity_gaussian()")
     # Set the max capacity to a given factor (e.g. "1.0" for 100% 
     # of the maximum capacity defined for the environment)
     max_capacity = get_max_capacity(env)*max_capacity_factor
@@ -273,14 +256,12 @@ def add_capacity_gaussian(env, max_capacity_factor, center, disp):
             c.add_capacity(cell, capacity)
 
 def add_capacity_from_string(env, capacity_str):
-    print("mas_environment.", "add_capacity_from_string()")
     eval(capacity_str)
 
 def apply_fn_to_all_cells(env, fn):
     """
         Apply the function fn to all cells of the environment.
     """
-    print("mas_environment.", "apply_fn_to_all_cells()")
     for cell in get_cells(env):
         fn(cell)
 
@@ -289,7 +270,6 @@ def set_cell_sugar_level_to_capacity(env):
         Set the sugar level of all cells to their respective
         capacity.
     """
-    print("mas_environment.", "set_cell_sugar_level_to_capacity()")
     apply_fn_to_all_cells(env, c.set_sugar_level_to_capacity)
 
 # --- Terminal output ---
@@ -299,7 +279,6 @@ def show(env):
         Print a list of all cells and, for each, print
         some key information. Mainly use this for debugging.
     """
-    print("mas_environment.", "show()")
     cell_ref_list = get_cell_refs(env)
     for cell_ref in cell_ref_list:
         print( cell_ref, end = ": " )
