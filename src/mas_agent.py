@@ -9,8 +9,10 @@
 #==================================================
 
 import random
-import mas_environment as e
 import mas_cell as c
+import mas_environment as e
+import mas_population as p
+import mas_utils as u
 
 #==================================================
 #  AGENT
@@ -25,12 +27,15 @@ SUGAR_LEVEL_IDX = 2
 POS_IDX = 3
 IS_LIVING_IDX = 4
 
+
+
 #------ Defaults--------
 
 METABOLISM_MIN = 0.1
-METABOLISM_MAX = 0.3
+METABOLISM_MAX = 0.2
 VISION_MIN=3
 VISION_MAX=10
+
 
 
 # --- Private functions --- 
@@ -40,13 +45,17 @@ def __get_property(agent, property_idx):
         raise Exception("Invalid agent property index.")
     return agent[property_idx]
 
+
 def __set_property(agent, property_idx, value):
     if not (0 <= property_idx <= MAX_IDX):
         raise Exception("Invalid agent property index.")
-    agent[property_idx] = value    
+    agent[property_idx] = value
+
 
 def __empty_instance():
     return [None]*(MAX_IDX+1)
+
+
 
 # --- Getters and setters ---
 
@@ -56,7 +65,7 @@ def get_metabolism(agent):
 
     """
     return __get_property ( agent, METABOLISM_IDX )
-    
+
 
 def set_metabolism ( agent, metabolism ):
     """
@@ -64,26 +73,29 @@ def set_metabolism ( agent, metabolism ):
     """
     __set_property ( agent, METABOLISM_IDX, metabolism )
 
+
 def get_vision ( agent ):
     """
        return the vision of the agent.
 
     """
     return __get_property ( agent, VISION_IDX )
-   
+
+
 def set_vision ( agent, vision ):
     """
        Set the vision of the agent
     """
     __set_property ( agent, VISION_IDX, vision )
-    
+
+
 def get_sugar_level(agent):
     """
        return the metabolism of the agent.
 
     """
     return __get_property(agent, SUGAR_LEVEL_IDX)
-    
+
 
 def set_sugar_level ( agent, sugar_level ):
     """
@@ -91,14 +103,14 @@ def set_sugar_level ( agent, sugar_level ):
     """
     __set_property ( agent, SUGAR_LEVEL_IDX, sugar_level )
 
-    
+
 def get_pos ( agent ):
     """
        return the pos of the agent.
 
     """
     return __get_property ( agent, POS_IDX )
-    
+
 
 def set_pos ( agent, pos ):
     """
@@ -106,94 +118,253 @@ def set_pos ( agent, pos ):
     """
     __set_property ( agent, POS_IDX, pos )
 
-def get_is_living (agent):
-    return __get_property(agent, IS_LIVING_IDX)
 
-def set_is_living(agent, is_living):
-    __set_property(agent, IS_LIVING_IDX, is_living)
-    
+def get_is_living( agent ):
+    return __get_property( agent, IS_LIVING_IDX )
+
+
+def set_is_living( agent, is_living ):
+    __set_property( agent, IS_LIVING_IDX, is_living )
+
+
+
 # --- Initialisation ---
 
-
-def empty_agent():
+def empty_agent ():
     """
         création d 'un agent avec des valeurs de bases
     """
     agent = __empty_instance()
-    set_metabolism(agent, 0.0)
-    set_vision(agent, 2)
-    set_sugar_level(agent, 0.0)
-    set_pos(agent, (0,0))
-    set_is_living(agent, True )
+    set_metabolism ( agent , 0.0 )
+    set_vision ( agent , 2 )
+    set_sugar_level ( agent , 0.0 )
+    set_pos ( agent , e.default_cell_ref() )
+    set_is_living( agent, True )
     return agent
-    
-def random_agent():
-    agent = empty_agent()
-    set_metabolism(agent, random.uniform(METABOLISM_MIN, METABOLISM_MAX))
-    set_vision(agent, random.randint(VISION_MIN, VISION_MAX))
-    return agent
-      
-# --- Vectors operators ---
 
-def vector_sum(vec1,vec2):
-    dim = len(vec1)
-    res = []
-    for i in range(dim):
-        res.append(vec1[i] + vec2[i])
-    return res
+
+def new_random ()  :
+    agent = empty_agent()
+    set_metabolism ( agent , random.uniform(METABOLISM_MIN,METABOLISM_MAX) )
+    set_vision ( agent , random.randint(VISION_MIN,VISION_MAX) )
+    return agent
+
+
+
+# --- Others ---
+
+def kill(pop, env, agent):
+    cell_ref = get_pos(agent)
+    cell = e.get_cell(env, cell_ref)
+    c.set_present_agent(cell, None)
+    p.remove_agent(pop, agent)
+
+
+def move_to(env, agent, target_cell_ref):
+    cell_ref = get_pos(agent)
+    cell_old = e.get_cell(env, cell_ref)
+    cell_new = e.get_cell(env, target_cell_ref)
     
-def vector_list_sum(vec_list, vec_add):
-    # Adds vec_add to each vector in vec_list
-    res = []
-    for vec in vec_list:
-        res.append(vector_sum(vec,vec_add))
-    return res
+    sz = e.size(env)
+    (x, y) = target_cell_ref
+    target_cell_ref = ( x%sz, y%sz )
+    
+    set_pos(agent, target_cell_ref ) # Indique à l'agent la nouvelle position.
+    c.set_present_agent(cell_old, None) # Indique à l'ancienne cellule qu'il n'y a plus d'agent présent.
+    c.set_present_agent(cell_new, agent) # Indique à la nouvelle cellule quel agent est présent.
+    
+   
+def eat_all(agent, env):
+    cell_ref = get_pos(agent)
+    cell = e.get_cell(env, cell_ref )
+    sugar = c.get_sugar_level( cell )                          # enregistre le taux de sucre
+    sugar += get_sugar_level ( agent )
+    c.set_sugar_level( cell , 0 )
+    set_sugar_level ( agent , sugar )
+
+
+def remove_metabolism_on_sugar_level(agent, pop):
+    sugar = get_sugar_level( agent )
+    sugar -= get_metabolism( agent )
+    set_sugar_level( agent, sugar )
+
+    if get_sugar_level(agent) < 0:
+        p.remove_agent(pop, agent)
+
+
+
+# --- Vectors ---
+
+def vector_unit( vec ):
+    vec_unit = [ vec[0], vec[1] ]
+    if vec_unit[0] > 0:
+        vec_unit[0] = 1
+    elif vec_unit[0] < 0:
+        vec_unit[0] = -1
+    if vec_unit[1] > 0:
+        vec_unit[1] = 1
+    elif vec_unit[1] < 0:
+        vec_unit[1] = -1
+    return vec_unit
+
+
 
 # --- Rules ---
 
-def move_to_highest_sugar_level_cell( env, agent ):
-    agent_pos = get_pos(agent)
-    moves_list = possible_moves( env, agent )
-    if len(moves_list) > 0:
-        possible_cell_refs = vector_list_sum(moves_list, agent_pos)
-        target_cell_ref = e.max_sugar_level_cell_ref(env,possible_cell_refs)
-        agent_move_to(env, agent, target_cell_ref)
-    else:
-        print(agent, "meurs")#agent_kill(mas,agent_ref)
+def RA1( pop, env, agent ):
+    """
+        Definition règle 1: trouve la liste des cellules ou un agent peut se déplacer
+    """
+    agent_ref = get_pos(agent) # Position agent
+    cells_refs = get_cells_refs( env, agent )
     
+    if len(cells_refs) > 0:                          
+        cells_refs = u.vector_list_sum( cells_refs, agent_ref ) 
+        target = e.max_sugar_level_cell_ref( env, cells_refs )  # trouve la cellule (dans la liste) avec le plus grand taux de sucre
+        move_to(env, agent, target)
+
+
+def RA2( pop, env, agent ):
+    agent_ref = get_pos(agent)
+    cells_refs = get_cells_refs( env, agent )
     
+    if len(cells_refs) > 0:
+        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
+        sort_cells_refs_decrease( env, cells_refs )
+        
+        for target in cells_refs:
+            if RA2_is_possible( env, agent, target ):
+                result =  u.vector_diff( target, agent_ref )
+                target_unit = vector_unit( result )
+                cell_ref = u.vector_sum( agent_ref, target_unit )
+                move_to(env, agent, cell_ref)
+                return
+
+
+def RA2_is_possible( env, agent, target ):
+    agent_ref = get_pos( agent )
+    result =  u.vector_diff( target, agent_ref )
+    target_unit = vector_unit( result )
+    cell_ref = u.vector_sum( agent_ref, target_unit )
+    cell = e.get_cell( env, cell_ref )
+    return ( not c.agent_is_present(cell) ) and get_metabolism(agent) <= get_sugar_level(agent) + c.get_sugar_level(cell)
+    
+
+def RA3( pop, env, agent ):
+    """
+        Définition règle 3: l'agent choisit la cellule qui a le taux de sucre minimum de ses besoins
+    """
+    agent_ref = get_pos( agent )
+    cells_refs = get_cells_refs( env, agent )
+    
+    if len(cells_refs) > 0:
+        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
+        target = min_sugar_level_need( env, agent, cells_refs )
+        move_to(env, agent, target)
+
+
+def RA4( pop, env, agent ):
+    """
+        Règle 4
+    """
+    agent_ref = get_pos(agent)
+    cells_refs = get_cells_refs( env, agent )
+    
+    if len(cells_refs) > 0:
+        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
+        sort_cells_refs_decrease( env, cells_refs )
+        
+        for target in cells_refs:
+            if RA4_is_possible( env, agent, target ):
+                result =  u.vector_diff( target, agent_ref )
+                target_unit = vector_unit( result )
+                cell_ref = u.vector_sum( agent_ref, target_unit )
+                move_to(env, agent, cell_ref)
+                return
+
+
+def RA4_is_possible( env, agent, target ):
+    return True;
+
+
+
 # --- Movement ---
 
-def possible_moves( env, agent ):
-    vision = get_vision(agent)
-    moves_list = []
-    for move in range(-vision,vision+1):
-        if move!=0:
-            if move_is_possible( env, agent, (move,0) ):
-                moves_list.append( (move,0) )
-            if move_is_possible( env, agent, (0,move) ):
-                moves_list.append( (0,move) )
-    return moves_list
+def get_cells_refs ( env, agent ):
+    """
+        Renvoie une liste des mouvements possibles aux alentours de l'agent.
+    """
+    agent_ref = get_pos(agent) # Position agent
+    vision = get_vision ( agent ) # Vision agent
+    vectors = [] # Liste de vecteurs
+    vectors.append( [0,0] )
+    for move in range(-vision, vision+1):
+        if move != 0:
+            vectors.append( [move,0] )
+            vectors.append( [0,move] )
     
-def move_is_possible( env, agent, move_vec):
-    cell_ref = get_pos(agent)
-    cell_ref = vector_sum(cell_ref, move_vec)
-    return agent_move_to_is_possible(env, agent, cell_ref)
+    cells_refs = []
+    for vec in vectors:
+        cell_ref = u.vector_sum( agent_ref, vec )  # On somme la position de l'agent
+        cell = e.get_cell( env, cell_ref ) # La cellule
+        if not c.agent_is_present( cell ):
+            cells_refs.append( vec )
     
-def agent_move_to_is_possible(env, agent, cell_ref):
-    cell = e.get_cell( env, cell_ref )
-    move_possible = not c.agent_is_present(cell) and get_metabolism(agent) < c.get_sugar_level(cell)
-    return move_possible    
+    return cells_refs
 
-def agent_move_to(env, agent, target_cell_ref):
-    if agent_move_to_is_possible(env, agent, target_cell_ref):
-        cell_ref = get_pos(agent)
-        cell_old = e.get_cell(env, cell_ref)
-        cell_new = e.get_cell(env, target_cell_ref)
-        # "Clean-up" the cell when leaving
-        c.set_present_agent(cell_old, None)
-        # Move and "declare" presence to target cell 
-        set_pos(agent, target_cell_ref)
-        c.set_present_agent(cell_new, agent)
-    else:
-        raise Exception("Error: An agent has tried to move to a cell that is not allowed!")
+
+def min_sugar_level_need( env, agent, cells_refs ):
+    """
+        Renvoie la cell_ref minimum que l'agent a besoin.
+    """
+    # On crée une liste des cellules graces à la liste des positions.
+    cells = []
+    for cell_ref in cells_refs:
+        cells.append( e.get_cell( env, cell_ref ) )
+    
+    # On a deux listes: les cellules et les positions.
+    # On ordonne la liste des cellules en fonction du taux de sucre (Et les positions s'ordonneront en fonction aussi)
+    u.sort_on_second_list(cells_refs, cells, order_decrease_cell_by_sugar_level)
+    
+    # On recherche le minimum
+    minimal_cell_ref = cells_refs[0]
+    minimal_cell = cells[0]
+    
+    #On parcout tous les éléments
+    for temp in range( len(cells) ):
+        temp_ref  = cells_refs[temp] #Position
+        temp_cell = cells[temp] #Cellule
+        
+        #Si le taux suffit à la survie et que celui-ci est plus petit que le supposé "minimal".
+        if c.get_sugar_level( temp_cell ) >= get_metabolism( agent ) and c.get_sugar_level( minimal_cell ) > c.get_sugar_level( temp_cell ):
+            minimal_cell_ref = temp_ref # Nouvelle position minimale
+            minimal_cell = temp_cell # Nouvelle cellule minimale
+            
+    return minimal_cell_ref # Renvoie la position de la cellule
+
+
+
+# --- Order ---
+
+def sort_cells_refs_decrease( env, cells_refs ):
+    """
+        Trie la liste des positions.
+    """
+    # On crée une liste des cellules graces à la liste des positions.
+    cells = []
+    for cell_ref in cells_refs:
+        cells.append( e.get_cell( env, cell_ref ) )
+    
+    # On a deux listes: les cellules et les positions.
+    # On ordonne la liste des cellules en fonction du taux de sucre (Et les positions s'ordonneront en fonction aussi)        
+    u.sort_on_second_list(cells_refs, cells, order_decrease_cell_by_sugar_level)
+
+
+def order_decrease_cell_by_sugar_level( cell1, cell2 ):
+    """
+        Renvoie vrai si le taux de sucre de la cell1 est plus petit que celui de la cell2.
+    """
+    return c.get_sugar_level( cell1 ) < c.get_sugar_level( cell2 )
+
+
+

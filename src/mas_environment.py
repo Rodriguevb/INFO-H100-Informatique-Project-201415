@@ -191,11 +191,11 @@ def sort_sugar_level_desc(env, cell_ref_list):
     # corresponding cell referenced in the list given as parameter.
     sugar_level_list = []
     for cell_ref in cell_ref_list:
-        cell = get_cell(cell_ref)
+        cell = get_cell(env, cell_ref)
         level = c.get_sugar_level(cell)
         sugar_level_list.append(level)
     # Call sorting function.
-    sort_on_second_list(cell_ref_list, sugar_level_list, order_numeric_asc)
+    u.sort_on_second_list(cell_ref_list, sugar_level_list, order_numeric_asc)
 
 # --- Help functions for cells ---
 
