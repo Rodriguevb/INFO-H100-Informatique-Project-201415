@@ -156,18 +156,18 @@ def new_random ()  :
 def kill(pop, env, agent):
     cell_ref = get_pos(agent)
     cell = e.get_cell(env, cell_ref)
-    c.set_present_agent(cell, None)
-    p.remove_agent(pop, agent)
+    c.set_present_agent(cell, None) # Dis qu'il n'y a plus d'agent présent dans la cellule
+    p.remove_agent(pop, agent) # On retire l'agent de la liste de la population
 
 
 def move_to(env, agent, target_cell_ref):
     cell_ref = get_pos(agent)
-    cell_old = e.get_cell(env, cell_ref)
-    cell_new = e.get_cell(env, target_cell_ref)
+    cell_old = e.get_cell(env, cell_ref) # Ancienne cellule où l'agent se trouvait
+    cell_new = e.get_cell(env, target_cell_ref) # Nouvelle cellule où l'agent se trouve
     
     sz = e.size(env)
     (x, y) = target_cell_ref
-    target_cell_ref = ( x%sz, y%sz )
+    target_cell_ref = ( x%sz, y%sz ) # Permet de passer de gauche à droite et de haut en bas dans la matrice environnement
     
     set_pos(agent, target_cell_ref ) # Indique à l'agent la nouvelle position.
     c.set_present_agent(cell_old, None) # Indique à l'ancienne cellule qu'il n'y a plus d'agent présent.
@@ -177,35 +177,19 @@ def move_to(env, agent, target_cell_ref):
 def eat_all(agent, env):
     cell_ref = get_pos(agent)
     cell = e.get_cell(env, cell_ref )
-    sugar = c.get_sugar_level( cell )                          # enregistre le taux de sucre
-    sugar += get_sugar_level ( agent )
-    c.set_sugar_level( cell , 0 )
-    set_sugar_level ( agent , sugar )
+    sugar = c.get_sugar_level( cell ) # On enregistre le taux de sucre de la cellule
+    sugar += get_sugar_level ( agent ) # On ajoute la réserve de l'agent
+    c.set_sugar_level( cell , 0 ) # On vide la cellule
+    set_sugar_level ( agent , sugar ) # On donne tout à l'agent
 
 
 def remove_metabolism_on_sugar_level(agent, pop):
-    sugar = get_sugar_level( agent )
-    sugar -= get_metabolism( agent )
-    set_sugar_level( agent, sugar )
+    sugar = get_sugar_level( agent ) # Enregistre le taux de sucre de l'agent
+    sugar -= get_metabolism( agent ) # On dimine par le metabolism
+    set_sugar_level( agent, sugar ) # On donne le nouveau niveau de sucre de l'agent
 
     if get_sugar_level(agent) < 0:
         p.remove_agent(pop, agent)
-
-
-
-# --- Vectors ---
-
-def vector_unit( vec ):
-    vec_unit = [ vec[0], vec[1] ]
-    if vec_unit[0] > 0:
-        vec_unit[0] = 1
-    elif vec_unit[0] < 0:
-        vec_unit[0] = -1
-    if vec_unit[1] > 0:
-        vec_unit[1] = 1
-    elif vec_unit[1] < 0:
-        vec_unit[1] = -1
-    return vec_unit
 
 
 
@@ -213,38 +197,39 @@ def vector_unit( vec ):
 
 def RA1( pop, env, agent ):
     """
-        Definition règle 1: trouve la liste des cellules ou un agent peut se déplacer
+        Règle 1: Se dirige vers la cellule avec le plus de sucre.
     """
     agent_ref = get_pos(agent) # Position agent
     cells_refs = get_cells_refs( env, agent )
     
     if len(cells_refs) > 0:                          
-        cells_refs = u.vector_list_sum( cells_refs, agent_ref ) 
         target = e.max_sugar_level_cell_ref( env, cells_refs )  # trouve la cellule (dans la liste) avec le plus grand taux de sucre
         move_to(env, agent, target)
 
 
 def RA2( pop, env, agent ):
+    """
+        Règle 2: Se dirige vers la cellule avec le plus de sucre mais de 1 case par 1 case.
+    """
     agent_ref = get_pos(agent)
     cells_refs = get_cells_refs( env, agent )
     
     if len(cells_refs) > 0:
-        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
         sort_cells_refs_decrease( env, cells_refs )
         
         for target in cells_refs:
             if RA2_is_possible( env, agent, target ):
                 result =  u.vector_diff( target, agent_ref )
-                target_unit = vector_unit( result )
-                cell_ref = u.vector_sum( agent_ref, target_unit )
-                move_to(env, agent, cell_ref)
+                target_unit = vector_one_max( result )
+                cell_ref = u.vector_sum( agent_ref, target_unit ) # Récupère la position de la cellule à coté de l'agent
+                move_to(env, agent, cell_ref) # Bouge l'agent
                 return
 
 
 def RA2_is_possible( env, agent, target ):
     agent_ref = get_pos( agent )
     result =  u.vector_diff( target, agent_ref )
-    target_unit = vector_unit( result )
+    target_unit = vector_one_max( result )
     cell_ref = u.vector_sum( agent_ref, target_unit )
     cell = e.get_cell( env, cell_ref )
     return ( not c.agent_is_present(cell) ) and get_metabolism(agent) <= get_sugar_level(agent) + c.get_sugar_level(cell)
@@ -252,39 +237,31 @@ def RA2_is_possible( env, agent, target ):
 
 def RA3( pop, env, agent ):
     """
-        Définition règle 3: l'agent choisit la cellule qui a le taux de sucre minimum de ses besoins
+        Règle 3: L'agent choisit la cellule qui a le taux de sucre au minimum de ses besoins
     """
     agent_ref = get_pos( agent )
     cells_refs = get_cells_refs( env, agent )
     
     if len(cells_refs) > 0:
-        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
         target = min_sugar_level_need( env, agent, cells_refs )
         move_to(env, agent, target)
 
 
 def RA4( pop, env, agent ):
     """
-        Règle 4
+        Règle 4: Va vers le taux de sucre le plus élevé mais vérifie avant si un agent n'en a pas besoin plus que lui.
     """
     agent_ref = get_pos(agent)
     cells_refs = get_cells_refs( env, agent )
     
     if len(cells_refs) > 0:
-        cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
         sort_cells_refs_decrease( env, cells_refs )
         
         for target in cells_refs:
-            if RA4_is_possible( env, agent, target ):
-                result =  u.vector_diff( target, agent_ref )
-                target_unit = vector_unit( result )
-                cell_ref = u.vector_sum( agent_ref, target_unit )
-                move_to(env, agent, cell_ref)
+            # Va vers la cible si il est dans le besoin ou qu'un autre agent n'en a pas besoin
+            if get_metabolism(agent) > get_sugar_level(agent) or not e.friend_need( env, agent, target ):
+                move_to(env, agent, target)
                 return
-
-
-def RA4_is_possible( env, agent, target ):
-    return True;
 
 
 
@@ -297,12 +274,11 @@ def get_cells_refs ( env, agent ):
     agent_ref = get_pos(agent) # Position agent
     vision = get_vision ( agent ) # Vision agent
     vectors = [] # Liste de vecteurs
-    vectors.append( [0,0] )
     for move in range(-vision, vision+1):
         if move != 0:
             vectors.append( [move,0] )
             vectors.append( [0,move] )
-    
+        
     cells_refs = []
     for vec in vectors:
         cell_ref = u.vector_sum( agent_ref, vec )  # On somme la position de l'agent
@@ -310,12 +286,16 @@ def get_cells_refs ( env, agent ):
         if not c.agent_is_present( cell ):
             cells_refs.append( vec )
     
+    cells_refs = list( u.vector_list_sum( cells_refs, agent_ref ) )
+    cells_refs.append( agent_ref ) # Car la cellule peut rester sur place
     return cells_refs
 
 
+# --- Others ---
+    
 def min_sugar_level_need( env, agent, cells_refs ):
     """
-        Renvoie la cell_ref minimum que l'agent a besoin.
+        Renvoie la cell_ref minimum que l'agent a besoin parmi la liste des cells_refs
     """
     # On crée une liste des cellules graces à la liste des positions.
     cells = []
@@ -343,6 +323,11 @@ def min_sugar_level_need( env, agent, cells_refs ):
     return minimal_cell_ref # Renvoie la position de la cellule
 
 
+def is_in_vision(agent, env, target):
+    """
+        Renvoie si la cible est bien dans la vision de l'agent.
+    """
+    return target in get_cells_refs(env, agent)
 
 # --- Order ---
 
@@ -367,4 +352,21 @@ def order_decrease_cell_by_sugar_level( cell1, cell2 ):
     return c.get_sugar_level( cell1 ) < c.get_sugar_level( cell2 )
 
 
+    
+# --- Vectors ---
+
+def vector_one_max( vec ):
+    """
+        On forme un vecteur dont les valeurs sont réduit dans l'intervalle -1 à 1
+    """
+    vec_unit = [ vec[0], vec[1] ]
+    if vec_unit[0] > 0:
+        vec_unit[0] = 1
+    elif vec_unit[0] < 0:
+        vec_unit[0] = -1
+    if vec_unit[1] > 0:
+        vec_unit[1] = 1
+    elif vec_unit[1] < 0:
+        vec_unit[1] = -1
+    return vec_unit
 

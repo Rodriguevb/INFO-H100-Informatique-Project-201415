@@ -14,6 +14,7 @@ import math
 import random
 
 import mas as m
+import mas_agent as a
 import mas_cell as c
 import mas_utils as u
 
@@ -284,3 +285,23 @@ def show(env):
         print( cell_ref, end = ": " )
         cell = get_cell(env, cell_ref)
         c.show(cell)
+        
+############################################################################
+# STUDENT
+def friend_need(env, agent, target):
+    """
+        Regarde dans la vision de l'agent si d'autres agent on besoin du sucre dans la cible.
+    """
+    cells_refs = a.get_cells_refs( env, agent )    
+    # On parcourt les cellules en vision, voir si des agents sont dans le besoin
+    for cell_ref in cells_refs:
+        cell = get_cell(env, cell_ref)
+        if c.agent_is_present( cell ):
+            agent = c.get_present_agent(cell)
+            if a.get_sugar_level(agent) < a.get_metabolism(agent) and a.is_in_vision(agent, env, target):
+                return True
+
+    return False
+    
+        
+############################################################################
