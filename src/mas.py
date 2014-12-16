@@ -27,14 +27,15 @@ import mas_utils as u
 
 # --- Constants ---
 
-MAX_IDX=6
+MAX_IDX=7
 ENV_IDX = 0                           # Environment
 POP_IDX = 1                           # Agent population
 CELL_RULES_IDX = 2                    # List of rules applied on cells
 AGENT_RULES_IDX = 3                   # List of rules applied on agents
-EXPERIMENT_ENDING_CONDITION_IDX = 4   # Function with the ending condition
-MAX_CYCLE_IDX = 5                     # Max number of cycles per experiment
-CYCLE_IDX = 6                         # Current cycle of an experiment
+AGENT_ORDERS_IDX = 4
+EXPERIMENT_ENDING_CONDITION_IDX = 5   # Function with the ending condition
+MAX_CYCLE_IDX = 6                     # Max number of cycles per experiment
+CYCLE_IDX = 7                         # Current cycle of an experiment
 
 # --- Default values ---
 
@@ -112,6 +113,23 @@ def set_agent_rules(mas, rules_list):
     """
 	__set_property(mas, AGENT_RULES_IDX, rules_list)
 
+#####################################################
+# ETUDIANT
+	
+def get_agent_orders(mas):
+	"""
+        Return the agent orders of the MAS as a list of functions.
+    """
+	return __get_property(mas, AGENT_ORDERS_IDX)
+
+def set_agent_orders(mas, orders_list):
+	"""
+        Set the agent orders of the MAS as a list of functions.
+    """
+	__set_property(mas, AGENT_ORDERS_IDX, orders_list)
+
+#####################################################
+	
 def get_ending_condition(mas):
 	"""
         Return the ending condition function of the MAS.
@@ -163,6 +181,7 @@ def new_instance():
 	set_pop(mas, None)
 	set_cell_rules(mas, [])
 	set_agent_rules(mas, [])
+	set_agent_orders(mas, [])
 	set_ending_condition(mas, DEFAULT_ENDING_CONDITION)
 	set_max_cycle(mas, 0)
 	set_cycle(mas, 0)
@@ -191,6 +210,10 @@ def new_instance_from_config(config):
 	agent_rules = u.cfg_agent_rules(config)
 	for rule in agent_rules:
 	    add_agent_rule_from_string(mas,rule)
+	# Agent orders
+	agent_orders = u.cfg_agent_orders(config)
+	for order in agent_orders:
+	    add_agent_order_from_string(mas,order)
 	# Experiment settings
 	set_max_cycle(mas,u.cfg_max_cycle(config))
 	return mas
@@ -241,6 +264,24 @@ def apply_agent_rules(mas):
 	for agent_rule in get_agent_rules(mas):
 		p.apply_rule(pop, agent_rule)
 
+################################################
+# ETUDIANT 
+
+# --- Agent orders ---
+
+def add_agent_order(mas, agent_order):
+	mas[AGENT_ORDERS_IDX].append(agent_order)
+
+def add_agent_order_from_string(mas, agent_order_str):
+	add_agent_order(mas, eval("p."+agent_order_str))
+
+def apply_agent_orders(mas):
+	pop = get_pop(mas)
+	for agent_order in get_agent_orders(mas):
+		p.apply_order(pop, agent_order)
+################################################
+		
+		
 # --- Execution ---
 
 def increment_cycle(mas):
@@ -253,6 +294,7 @@ def run_one_cycle(mas):
 	"""
 		Run one experiment cycle of the MAS.
 	"""
+	apply_agent_orders(mas)
 	apply_cell_rules(mas)
 	apply_agent_rules(mas)
 

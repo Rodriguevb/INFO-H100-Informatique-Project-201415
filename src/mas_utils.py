@@ -193,6 +193,19 @@ def cfg_agent_rules(config):
     res = config_get_property(config,"ADD_AGENT_RULE")
     res = into_list(res)
     return res
+	
+###########################################
+# ETUDIANT
+
+def cfg_agent_orders(config):
+    """
+        Return the list of agent orders from the configuration.
+    """
+    res = config_get_property(config,"ADD_AGENT_ORDER")
+    res = into_list(res)
+    return res
+
+###########################################
 
 def cfg_capacity_distributions(config):
     """

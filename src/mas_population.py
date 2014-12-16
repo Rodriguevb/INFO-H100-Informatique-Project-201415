@@ -93,21 +93,17 @@ def apply_rule(pop, agent_rule):
     env = get_env(pop)
     agents = get_agents(pop)
     
-    ########################################################
-    
-    # On change l'ordre de mouvement des agents
-    
-    #OA1( agents ) # OA1: l'ordre des agents est choisi aléatoirement à chaque cycle.
-    OA2( agents ) # OA2: L'ordre est du plus faible taux de sucre d'agent au plus gros
-    
-    ########################################################
-    
     for agent in agents: # Parcours tous les agents de la population
         agent_rule( pop, env, agent ) # Appel la fonction de l'agent
         a.eat_all( agent, env) # Mange tout
         a.remove_metabolism_on_sugar_level( agent, pop ) # On retire le métabolism dans la réserve
 
-
+# --- Order ---
+		
+def apply_order(pop, agent_order):
+	agents = get_agents(pop)
+	agent_order( agents )
+		
 def OA1( agents ):
     """
         OA1: l'ordre des agents est choisi aléatoirement à chaque cycle.

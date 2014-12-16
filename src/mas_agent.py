@@ -151,6 +151,7 @@ def new_random ()  :
 
 
 
+    
 # --- Others ---
 
 def kill(pop, env, agent):
@@ -189,9 +190,14 @@ def remove_metabolism_on_sugar_level(agent, pop):
     set_sugar_level( agent, sugar ) # On donne le nouveau niveau de sucre de l'agent
 
     if get_sugar_level(agent) < 0:
-        p.remove_agent(pop, agent)
+        env = p.get_env(pop)
+        kill(pop, env, agent)
 
 
+        
+        
+        
+        
 
 # --- Rules ---
 
